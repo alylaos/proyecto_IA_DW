@@ -1,0 +1,19 @@
+Muéstrame la región y el conteo de afiliados para aquellos que tienen 50 años y viven en 'New York', 'North Carolina', 'Michigan' o 'Florida'. Agrupa los resultados por región.
+
+Muéstrame la región y el conteo de afiliados para aquellos que tienen 50 años y viven en 'New York', 'North Carolina', 'Michigan' o 'Florida'. Agrupa los resultados por región y genera un gráfico.
+
+Muéstrame la cantidad de pólizas por estado ('Activa', 'Cancelada', 'Vencida') y visualízalo en un gráfico.
+
+¿Cuántos siniestros hay de cada tipo? Muestra un gráfico.
+
+Monto total de siniestros aprobados por tipo. Visualiza con un gráfico.
+
+Número de siniestros por región del afiliado. Muestra un gráfico.
+
+Para cada región, ¿cuál es el número total de pólizas activas? Muestra un gráfico.
+
+Número de siniestros aprobados por tipo de póliza del afiliado. Genera un gráfico.
+
+Promedio de primas de pólizas por región del afiliado. Visualiza los resultados.
+
+Promedio de primas de pólizas por región del afiliado. Visualiza los resultados.
