@@ -1,2 +1,108 @@
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\venv\Scripts\Activate
+
+-- Crear la base de datos
+CREATE DATABASE IF NOT EXISTS dbseguro
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE dbseguro;
+
+-- 1) Tabla: afiliados
+CREATE or alter TABLE afiliados (
+  id_afiliado         INT           AUTO_INCREMENT PRIMARY KEY,
+  nombre              VARCHAR(100)  NOT NULL,
+  documento           VARCHAR(20)   NOT NULL UNIQUE,
+  fecha_nacimiento    DATE          NOT NULL,
+  genero              ENUM('M','F') NOT NULL,
+  actividad_economica VARCHAR(50),
+  provincia           VARCHAR(50)   NOT NULL,
+  ciudad              VARCHAR(50)   NOT NULL,
+  codigo_postal       VARCHAR(10)   NOT NULL,
+  antiguedad_meses	  INT           NOT NULL,
+  fecha_afiliacion    DATE          NOT NULL,
+  INDEX idx_afiliado_provincia (provincia) -- Sintaxis del índice corregida
+) ENGINE=InnoDB;
+
+
+-- 2) Tabla: productos
+CREATE TABLE productos (
+  id_producto         INT             AUTO_INCREMENT PRIMARY KEY,
+  nombre              VARCHAR(100)    NOT NULL,
+  tipo_seguro         VARCHAR(50)     NOT NULL,
+  riesgos_cubiertos   TEXT,
+  deducible           DECIMAL(12,2),
+  condiciones_generales TEXT
+) ENGINE=InnoDB;
+
+-- 3) Tabla: polizas
+CREATE TABLE polizas (
+  id_poliza         CHAR(36) PRIMARY KEY,
+  id_afiliado       INT NOT NULL,
+  id_producto       INT NOT NULL,
+  fecha_inicio      DATE NOT NULL,
+  fecha_fin         DATE NOT NULL,
+  estado            ENUM('Activa','Cancelada','Vencida') NOT NULL,
+  monto_asegurado   DECIMAL(14,2),
+  prima             DECIMAL(12,2),
+  tipo_riesgo       ENUM('Alto','Medio','Bajo'),
+  vigencia_meses    INT,
+  INDEX idx_poliza_afiliado (id_afiliado), -- Sintaxis del índice corregida
+  INDEX idx_poliza_producto (id_producto), -- Sintaxis del índice corregida
+  FOREIGN KEY (id_afiliado) REFERENCES afiliados(id_afiliado),
+  FOREIGN KEY (id_producto) REFERENCES productos(id_producto) -- Asumiendo que tienes una tabla 'productos'
+) ENGINE=InnoDB;
+
+-- 4) Tabla: siniestros
+CREATE TABLE siniestros (
+  id_siniestro      CHAR(36) PRIMARY KEY,
+  id_poliza         CHAR(36) NOT NULL,
+  id_afiliado       INT NOT NULL,
+  fecha_siniestro   DATE NOT NULL,
+  fecha_denuncia    DATE NOT NULL,
+  tipo_siniestro    VARCHAR(50),
+  estado_siniestro  ENUM('Pendiente','Pagado','Rechazado') NOT NULL,
+  provincia         VARCHAR(50) NOT NULL,
+  ciudad            VARCHAR(50) NOT NULL,
+  causa             VARCHAR(100),
+  descripcion       TEXT,
+  gravedad          ENUM('Leve','Moderada','Grave'),
+  INDEX idx_siniestro_poliza (id_poliza), -- Sintaxis del índice corregida
+  INDEX idx_siniestro_afiliado (id_afiliado), -- Sintaxis del índice corregida
+  FOREIGN KEY (id_poliza) REFERENCES polizas(id_poliza),
+  FOREIGN KEY (id_afiliado) REFERENCES afiliados(id_afiliado)
+) ENGINE=InnoDB;
+
+
+-- 5) Tabla: pagos_siniestros
+CREATE TABLE pagos_siniestros (
+  id_pago           CHAR(36) PRIMARY KEY,
+  id_siniestro      CHAR(36) NOT NULL,
+  fecha_pago        DATE NOT NULL,
+  monto_pagado      DECIMAL(14,2),
+  estado_pago       ENUM('Procesado','Pendiente'),
+  tipo_pago         VARCHAR(50),
+  moneda            CHAR(3) DEFAULT 'USD',
+  cuenta_destino    VARCHAR(50),
+  INDEX idx_pago_siniestro (id_siniestro), -- Sintaxis del índice corregida
+  FOREIGN KEY (id_siniestro) REFERENCES siniestros(id_siniestro)
+) ENGINE=InnoDB;
+
+-- 6) Tabla: evaluaciones_siniestro
+CREATE TABLE evaluaciones_siniestro (
+  id_evaluacion     CHAR(36) PRIMARY KEY,
+  id_siniestro      CHAR(36) NOT NULL,
+  id_perito         VARCHAR(20),
+  fecha_evaluacion  DATE NOT NULL,
+  monto_estimado    DECIMAL(14,2),
+  monto_rechazado   DECIMAL(14,2),
+  motivo_rechazo    VARCHAR(100),
+  puntaje_fraude    DECIMAL(4,2),
+  comentarios       TEXT,
+  INDEX idx_eval_siniestro (id_siniestro), -- Sintaxis del índice corregida
+  FOREIGN KEY (id_siniestro) REFERENCES siniestros(id_siniestro)
+) ENGINE=InnoDB;
+
+-- Modificacion de tablas
+ALTER TABLE afiliados
+CHANGE COLUMN fecha_afiliacion fecha_afiliacion DATE NOT NULL;
